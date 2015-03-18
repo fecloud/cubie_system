@@ -1,0 +1,137 @@
+#!/bin/sh
+
+## Check to see if we are running as root first.
+
+if [ "$(id -u)" != "0" ]; then
+    echo "this script must be run as root" 1>&2
+    exit 1
+fi
+
+echo  "\n============== system init ====================="
+
+#######################
+echo " * install git"
+git=`dpkg -l | grep git| awk '{print $2}' | head -n 1 `
+if [ $git = "git" ]
+then
+	echo " * installed git"
+else
+	echo "y" | apt-get install git
+fi
+
+#######################
+set_timezone="cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
+echo "\n * $set_timezone"
+
+$set_timezone
+
+if [ $? -eq 0 ]
+then
+	echo " * set_timezone ok"
+else
+	exit 1
+fi
+
+#######################
+echo "\n * mkdir mount dirs and /hdd"
+
+mkdir -p /mnt/nanda
+mkdir -p /mnt/nandb
+mkdir -p /mnt/sd1
+mkdir -p /mnt/sd2
+mkdir -p /mnt/sda1
+mkdir -p /mnt/sd2
+ln -f -s /mnt/sda2 /hdd
+
+if [ $? -eq 0 ]
+then
+        echo " * mkdir mount dirs ok"
+else
+        exit 1
+fi
+
+#######################
+echo "\n * start mount sda1 sda2"
+mount /dev/sda1 /mnt/sda1
+mount /dev/sda2 /mnt/sda2
+echo " * start mount sda1 sda2 ok"
+
+#######################
+echo "\n * install vim"
+vim=`dpkg -l | grep vim | awk '{print $2}'| head -n 1`
+if [ "$vim" = "vim" ]
+then
+	echo " * installed vim" 
+else
+	echo "y" | apt-get install vim
+fi
+echo " * config vim"
+vim_config=`cat /etc/vim/vimrc  | grep 'set nu'| awk '{print $1}' | head -n 1 `
+if [ $vim_config = "set nu" ]
+then
+	echo " * not add set nu to vimrc"
+else 
+	echo "\nset nu" >> /etc/vim/vimrc
+	echo "\nset ts=4" >> /etc/vim/vimrc
+fi
+
+#######################
+echo "\n * uninstall apache2"
+apache2=`dpkg -l | grep apache2 | awk '{print $2}' | head -n 1 `
+if [ "$apache2" = "apache2" ]
+then
+	echo " * installed apache2"
+	echo "y" | apt-get autoremove --purge apache2
+fi
+apache2_bin=`dpkg -l | grep apache2-bin | awk '{print $2}' | head -n 1`
+if [ "$apache2_bin" = "apache2-bin " ]
+then
+	echo " * installed apache2-bin"
+	echo "y" | apt-get autoremove --purge apache2-bin
+fi
+apache2_data=`dpkg -l | grep apache2-data | awk '{print $2}' | head -n 1 `
+if [ "$apache2_data" = "apache2-data" ]
+then
+	echo " * installed apache2-data"
+	echo "y" | apt-get autoremove --purge apache2-data
+fi
+
+#######################
+echo "\n * install nfs-kernel-server"
+nfs_kernel_server=`dpkg -l | grep nfs-kernel-server | awk '{print $2}' | head -n 1`
+if [ "$nfs_kernel_server" = "nfs-kernel-server" ]
+then
+	echo " * installed nfs-kernel-server"
+else 
+	echo " * to install nfs-kernel-server"
+	echo "y" | apt-get install nfs-kernel-server
+fi
+echo " * config nfs-kernel-server"
+nfs_kernel_server_config=`cat /etc/exports | grep hdd | head -n 1 | wc -L `
+if [ $nfs_kernel_server_config -gt 0 ]
+then
+	echo " * not add /hdd shared to /etc/exports"	
+else 
+	echo "\n/hdd *(rw,sync,all_squash,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
+	service nfs-kernel-server restart
+fi
+
+#######################
+echo "\n * install samba"
+samba=`dpkg -l| awk '{print $2}' | grep '^samba$' | head -n 1`
+if [ "$samba" = "samba" ]
+then
+	echo " * installed samba"
+else
+	echo "y" | apt-get install samba
+	echo " * config samba"
+	echo "\n[shared]\ncomment = shared\npath = /mnt/sda2/f\nbrowseable = yes\nwrite list = @linaro\nguest ok = no " >> /etc/samba/smb.conf
+	echo "ouyangfeng\nouyangfeng\n" | sudo -S smbpasswd -a linaro
+	service samd restart
+fi
+
+#######################
+echo "\n * ntpdate time.asia.apple.com"
+ntpdate time.asia.apple.com
+
+echo "\n============== system init end ====================="
