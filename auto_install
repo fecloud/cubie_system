@@ -150,6 +150,17 @@ else
 fi
 
 #######################
+echo "\n * install nethogs"
+nethogs=`dpkg -l | grep nethogs | awk '{print $2}'| head -n 1`
+if [ "$nethogs" = "nethogs" ]
+then
+	echo " * installed nethogs" 
+else
+	echo "y" | apt-get install nethogs
+fi
+
+
+#######################
 echo "\n * ntpdate time.asia.apple.com"
 ntpdate time.asia.apple.com
 
