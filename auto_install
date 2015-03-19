@@ -2,7 +2,7 @@
 
 ## Check to see if we are running as root first.
 
-if [ "$(id -u)" != "0" ]; then
+if [ "$(id -u)" != "0" ] ; then
     echo "this script must be run as root" 1>&2
     exit 1
 fi
@@ -13,22 +13,22 @@ echo  "\n============== system init ====================="
 #######################
 echo "\n * set hostname to fcloud"
 host_name=`cat /etc/hostname  | grep '^fcloud' | wc -L`
-if [ $host_name -eq 0 ]
-then
+if [ $host_name -eq 0 ] ; then
 	echo "fcloud" > /etc/hostname
 else
-	echo " * not set hostname"
+	echo " * not need set hostname"
 fi
+
 
 #######################
 echo "\n * install git"
-git=`dpkg -l | grep git| awk '{print $2}' | head -n 1 `
-if [ $git = "git" ]
-then
+git=`dpkg -l | awk '{print $2}' | grep '^git$' | head -n 1 `
+if [ $git = "git" ] ; then
 	echo " * installed git"
 else
 	echo "y" | apt-get install git
 fi
+
 
 #######################
 set_timezone="cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
@@ -36,90 +36,140 @@ echo "\n * $set_timezone"
 
 $set_timezone
 
-if [ $? -eq 0 ]
-then
+if [ $? -eq 0 ] ; then
 	echo " * set_timezone ok"
 else
 	exit 1
 fi
 
+
 #######################
 echo "\n * mkdir mount dirs and /hdd"
 
-mkdir -p /mnt/nanda
-mkdir -p /mnt/nandb
-mkdir -p /mnt/sd1
-mkdir -p /mnt/sd2
-mkdir -p /mnt/sda1
-mkdir -p /mnt/sd2
-ln -f -s /mnt/sda2 /hdd
+if [ -d "/mnt/nanda" ] ;  then
+	echo " * not need mkdir -p /mnt/nanda"
+else
+	echo " * mkdir -p /mnt/nanda"
+	mkdir -p /mnt/nanda
+fi
+if [ -d "/mnt/nandb" ] ;  then
+	echo " * not need mkdir -p /mnt/nandb"
+else
+	echo " * mkdir -p /mnt/nandb"
+	mkdir -p /mnt/nandb
+fi
+if [ -d "/mnt/sd1" ] ;  then
+	echo " * not need mkdir -p /mnt/sd1"
+else
+	echo " * mkdir -p /mnt/sd1"
+	mkdir -p /mnt/sd1
+fi
+if [ -d "/mnt/sd2" ] ;  then
+	echo " * not need mkdir -p /mnt/sd2"
+else
+	echo " * mkdir -p /mnt/sd2"
+	mkdir -p /mnt/sd2
+fi
+if [ -d "/mnt/sda1" ] ;  then
+	echo " * not need mkdir -p /mnt/sda1"
+else
+	echo " * mkdir -p /mnt/sda1"
+	mkdir -p /mnt/sda1
+fi
+if [ -d "/mnt/sda2" ] ;  then
+	echo " * not need mkdir -p /mnt/sda2"
+else
+	echo " * mkdir -p /mnt/sda2"
+	mkdir -p /mnt/sda2
+fi
+if [ -d "/hdd" ] ;  then
+	echo " * not need ln -f -s /mnt/sda2 /hdd"
+else
+	echo " * ln -f -s /mnt/sda2 /hdd"
+	ln -f -s /mnt/sda2 /hdd
+fi
 
-if [ $? -eq 0 ]
-then
+if [ $? -eq 0 ] ; then
         echo " * mkdir mount dirs ok"
 else
         exit 1
 fi
 
+
 #######################
 echo "\n * add sda2 to fstab"
 sda2=`cat /etc/fstab | grep sda2 | head -n 1 | wc -L`
-if [ $sda2 -eq 0 ]
-then
+if [ $sda2 -eq 0 ] ; then
 	echo "\n/dev/sda2	/mnt/sda2	ext4	defaults	1	1" >> /etc/fstab
+else
+	echo " * not nedd add sda2 to fstab"
 fi
+
 
 #######################
 echo "\n * start mount sda1 sda2"
-mount /dev/sda1 /mnt/sda1
-mount /dev/sda2 /mnt/sda2
+ismount_sda1=`df -lh | awk '{print $1}' | grep '^/dev/sda1' | wc -L`
+ismount_sda2=`df -lh | awk '{print $1}' | grep '^/dev/sda2' | wc -L`
+if [ $ismount_sda1 -gt 0 ] ; then
+	echo " * /dev/sda1 mounted"
+else
+	mount /dev/sda1 /mnt/sda1
+fi
+if [ $ismount_sda2 -gt 0 ] ; then
+		echo " * /dev/sda2 mounted"
+else		
+	mount /dev/sda2 /mnt/sda2
+fi
 echo " * start mount sda1 sda2 ok"
+
 
 #######################
 echo "\n * install vim"
-vim=`dpkg -l | grep vim | awk '{print $2}'| head -n 1`
-if [ "$vim" = "vim" ]
-then
+vim=`dpkg -l| awk '{print $2}' | grep '^vim$' | head -n 1`
+if [ "$vim" = "vim" ] ; then
 	echo " * installed vim" 
 else
 	echo "y" | apt-get install vim
 fi
 echo " * config vim"
 vim_config=`cat /etc/vim/vimrc  | grep 'set nu'| awk '{print $1}' | head -n 1 `
-if [ $vim_config = "set nu" ]
-then
+if [ $vim_config = "set nu" ] ; then
 	echo " * not add set nu to vimrc"
 else 
 	echo "\nset nu" >> /etc/vim/vimrc
 	echo "\nset ts=4" >> /etc/vim/vimrc
 fi
 
+
 #######################
 echo "\n * uninstall apache2"
-apache2=`dpkg -l | grep apache2 | awk '{print $2}' | head -n 1 `
-if [ "$apache2" = "apache2" ]
-then
+apache2=`dpkg -l| awk '{print $2}' | grep '^apache2$' | head -n 1 `
+if [ "$apache2" = "apache2" ] ; then
 	echo " * installed apache2"
 	echo "y" | apt-get autoremove --purge apache2
+else
+	echo " * not need uninstall apache2"
 fi
-apache2_bin=`dpkg -l | grep apache2-bin | awk '{print $2}' | head -n 1`
-if [ "$apache2_bin" = "apache2-bin " ]
-then
+apache2_bin=`dpkg -l | awk '{print $2}' | grep '^apache2-bin$' | head -n 1`
+if [ "$apache2_bin" = "apache2-bin " ] ; then
 	echo " * installed apache2-bin"
 	echo "y" | apt-get autoremove --purge apache2-bin
+else
+	echo " * not need uninstall apache2-bin"
 fi
-apache2_data=`dpkg -l | grep apache2-data | awk '{print $2}' | head -n 1 `
-if [ "$apache2_data" = "apache2-data" ]
-then
+apache2_data=`dpkg -l | awk '{print $2}' | grep '^apache2-data$' | head -n 1 `
+if [ "$apache2_data" = "apache2-data" ] ; then
 	echo " * installed apache2-data"
 	echo "y" | apt-get autoremove --purge apache2-data
+else
+	echo " * not need uninstall apache2-data"
 fi
+
 
 #######################
 echo "\n * install nfs-kernel-server"
-nfs_kernel_server=`dpkg -l | grep nfs-kernel-server | awk '{print $2}' | head -n 1`
-if [ "$nfs_kernel_server" = "nfs-kernel-server" ]
-then
+nfs_kernel_server=`dpkg -l | awk '{print $2}' | grep '^nfs-kernel-server$' | head -n 1`
+if [ "$nfs_kernel_server" = "nfs-kernel-server" ] ; then
 	echo " * installed nfs-kernel-server"
 else 
 	echo " * to install nfs-kernel-server"
@@ -127,19 +177,27 @@ else
 fi
 echo " * config nfs-kernel-server"
 nfs_kernel_server_config=`cat /etc/exports | grep hdd | head -n 1 | wc -L `
-if [ $nfs_kernel_server_config -gt 0 ]
-then
+if [ $nfs_kernel_server_config -gt 0 ] ; then
 	echo " * not add /hdd shared to /etc/exports"	
 else 
 	echo "\n/hdd *(rw,sync,all_squash,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
 	service nfs-kernel-server restart
 fi
+echo " * modify nfs-kernel-server port"
+nfs_kernel_server_port=`cat /etc/services | grep "^mountd 1011" | head -n 1 | wc -L `
+if [ $nfs_kernel_server_port -gt 0 ] ; then
+	echo " * not need modify nfs-kernel-server port 1011"
+else
+	echo "\nmountd 1011/udp\nmountd 1011/tcp" >> /etc/services
+	echo " * modify nfs-kernel-server port to 1011"
+	service nfs-kernel-server restart
+fi
+
 
 #######################
 echo "\n * install samba"
 samba=`dpkg -l| awk '{print $2}' | grep '^samba$' | head -n 1`
-if [ "$samba" = "samba" ]
-then
+if [ "$samba" = "samba" ] ; then
 	echo " * installed samba"
 else
 	echo "y" | apt-get install samba
@@ -149,14 +207,24 @@ else
 	service samd restart
 fi
 
+
 #######################
 echo "\n * install nethogs"
-nethogs=`dpkg -l | grep nethogs | awk '{print $2}'| head -n 1`
-if [ "$nethogs" = "nethogs" ]
-then
+nethogs=`dpkg -l | awk '{print $2}' | grep '^nethogs$' | head -n 1`
+if [ "$nethogs" = "nethogs" ] ; then
 	echo " * installed nethogs" 
 else
 	echo "y" | apt-get install nethogs
+fi
+
+
+#######################
+echo "\n * install build-essential"
+build_essential=`dpkg -l | awk '{print $2}' | grep '^build-essential$' | head -n 1`
+if [ "$build_essential" = "build-essential" ] ; then
+	echo " * installed build-essential" 
+else
+	echo "y" | apt-get install build-essential
 fi
 
 
