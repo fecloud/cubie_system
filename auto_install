@@ -229,6 +229,14 @@ fi
 
 
 #######################
+echo "\n * install screen"
+screen=`dpkg -l | awk '{print $2}' | grep '^screen$' | head -n 1`
+if [ "$screen" = "screen" ] ; then
+	echo " * installed screen" 
+else
+	echo "y" | sudo apt-get install screen
+fi
+
 echo "\n * ntpdate time.asia.apple.com"
 ntpdate time.asia.apple.com
 
