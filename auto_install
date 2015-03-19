@@ -23,7 +23,7 @@ fi
 #######################
 echo "\n * install git"
 git=`dpkg -l | awk '{print $2}' | grep '^git$' | head -n 1 `
-if [ $git = "git" ] ; then
+if [ "$git" = "git" ] ; then
 	echo " * installed git"
 else
 	echo "y" | apt-get install git
