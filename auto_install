@@ -17,7 +17,6 @@ echo "$WORK_MSG chmod user home dir"
 ls /home/ | xargs  -i -n1 echo "chmod -R 775 /home/{} && chown -R {} /home/{} && chgrp -R {} /home/{}" | sh
 
 
-
 #######################
 echo "$WORK_MSG set hostname to fcloud"
 host_name=`cat /etc/hostname  | grep '^fcloud' | wc -L`
@@ -25,6 +24,15 @@ if [ $host_name -eq 0 ] ; then
 	echo "fcloud" > /etc/hostname
 else
 	echo " * not need set hostname"
+fi
+
+#######################
+echo "$WORK_MSG set brightness to off"
+brightness_status=`cat /etc/rc.local | grep 'brightness' | wc -L`
+if [ $brightness_status -gt 0 ] ; then
+	echo " * not need set off brightness to start boot"
+else
+	sed '/^test/a\\echo \"ls /sys/class/leds/*/brightness | xargs -i -n1 echo \"echo 0 > {}\" | sh ' -i  /etc/rc.local
 fi
 
 
