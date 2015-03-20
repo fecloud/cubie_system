@@ -44,7 +44,7 @@ if [ -f "$user_home/.ssh/id_rsa" ] ; then
 	echo " * not need copy .ssh/id_rsa"
 else
 	echo " * cp id_rsa"
-	cp -f .ssh/id_rsa.pub $user_home/.ssh/id_rsa
+	cp -f .ssh/id_rsa $user_home/.ssh/id_rsa
 fi
 chmod 600 $user_home/.ssh/id_rsa
 
