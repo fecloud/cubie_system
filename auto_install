@@ -2,6 +2,8 @@
 
 ## Check to see if we are running as root first.
 
+WORK_MSG="\n *"
+
 if [ "$(id -u)" != "0" ] ; then
     echo "this script must be run as root" 1>&2
     exit 1
@@ -11,7 +13,13 @@ echo  "\n============== system init ====================="
 
 
 #######################
-echo "\n * set hostname to fcloud"
+echo "$WORK_MSG chmod user home dir"
+ls /home/ | xargs  -i -n1 echo "chmod -R 775 /home/{} && chown -R {} /home/{} && chgrp -R {} /home/{}" | sh
+
+
+
+#######################
+echo "$WORK_MSG set hostname to fcloud"
 host_name=`cat /etc/hostname  | grep '^fcloud' | wc -L`
 if [ $host_name -eq 0 ] ; then
 	echo "fcloud" > /etc/hostname
@@ -21,7 +29,7 @@ fi
 
 
 #######################
-echo "\n * install git"
+echo "$WORK_MSG install git"
 git=`dpkg -l | awk '{print $2}' | grep '^git$' | head -n 1 `
 if [ "$git" = "git" ] ; then
 	echo " * installed git"
@@ -32,7 +40,7 @@ fi
 
 #######################
 set_timezone="cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime"
-echo "\n * $set_timezone"
+echo "$WORK_MSG $set_timezone"
 
 $set_timezone
 
@@ -44,7 +52,7 @@ fi
 
 
 #######################
-echo "\n * mkdir mount dirs and /hdd"
+echo "$WORK_MSG mkdir mount dirs and /hdd"
 
 if [ -d "/mnt/nanda" ] ;  then
 	echo " * not need mkdir -p /mnt/nanda"
@@ -97,7 +105,7 @@ fi
 
 
 #######################
-echo "\n * add sda2 to fstab"
+echo "$WORK_MSG add sda2 to fstab"
 sda2=`cat /etc/fstab | grep sda2 | head -n 1 | wc -L`
 if [ $sda2 -eq 0 ] ; then
 	echo "\n/dev/sda2	/mnt/sda2	ext4	defaults	1	1" >> /etc/fstab
@@ -107,7 +115,7 @@ fi
 
 
 #######################
-echo "\n * start mount sda1 sda2"
+echo "$WORK_MSG start mount sda1 sda2"
 ismount_sda1=`df -lh | awk '{print $1}' | grep '^/dev/sda1' | wc -L`
 ismount_sda2=`df -lh | awk '{print $1}' | grep '^/dev/sda2' | wc -L`
 if [ $ismount_sda1 -gt 0 ] ; then
@@ -124,7 +132,7 @@ echo " * start mount sda1 sda2 ok"
 
 
 #######################
-echo "\n * install vim"
+echo "$WORK_MSG install vim"
 vim=`dpkg -l| awk '{print $2}' | grep '^vim$' | head -n 1`
 if [ "$vim" = "vim" ] ; then
 	echo " * installed vim" 
@@ -142,7 +150,7 @@ fi
 
 
 #######################
-echo "\n * uninstall apache2"
+echo "$WORK_MSG uninstall apache2"
 apache2=`dpkg -l| awk '{print $2}' | grep '^apache2$' | head -n 1 `
 if [ "$apache2" = "apache2" ] ; then
 	echo " * installed apache2"
@@ -167,7 +175,7 @@ fi
 
 
 #######################
-echo "\n * install nfs-kernel-server"
+echo "$WORK_MSG install nfs-kernel-server"
 nfs_kernel_server=`dpkg -l | awk '{print $2}' | grep '^nfs-kernel-server$' | head -n 1`
 if [ "$nfs_kernel_server" = "nfs-kernel-server" ] ; then
 	echo " * installed nfs-kernel-server"
@@ -195,7 +203,7 @@ fi
 
 
 #######################
-echo "\n * install samba"
+echo "$WORK_MSG install samba"
 samba=`dpkg -l| awk '{print $2}' | grep '^samba$' | head -n 1`
 if [ "$samba" = "samba" ] ; then
 	echo " * installed samba"
@@ -209,7 +217,7 @@ fi
 
 
 #######################
-echo "\n * install nethogs"
+echo "$WORK_MSG install nethogs"
 nethogs=`dpkg -l | awk '{print $2}' | grep '^nethogs$' | head -n 1`
 if [ "$nethogs" = "nethogs" ] ; then
 	echo " * installed nethogs" 
@@ -219,7 +227,7 @@ fi
 
 
 #######################
-echo "\n * install build-essential"
+echo "$WORK_MSG install build-essential"
 build_essential=`dpkg -l | awk '{print $2}' | grep '^build-essential$' | head -n 1`
 if [ "$build_essential" = "build-essential" ] ; then
 	echo " * installed build-essential" 
@@ -229,7 +237,7 @@ fi
 
 
 #######################
-echo "\n * install screen"
+echo "$WORK_MSG install screen"
 screen=`dpkg -l | awk '{print $2}' | grep '^screen$' | head -n 1`
 if [ "$screen" = "screen" ] ; then
 	echo " * installed screen" 
@@ -237,7 +245,7 @@ else
 	echo "y" | sudo apt-get install screen
 fi
 
-echo "\n * ntpdate time.asia.apple.com"
+echo "$WORK_MSG ntpdate time.asia.apple.com"
 ntpdate time.asia.apple.com
 
 echo "\n=============== system init end =====================\n"
