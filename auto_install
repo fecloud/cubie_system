@@ -253,6 +253,16 @@ else
 	echo "y" | sudo apt-get install screen
 fi
 
+
+#######################
+echo "$WORK_MSG install unzip"
+unzip=`dpkg -l | awk '{print $2}' | grep '^unzip$' | head -n 1`
+if [ "$unzip" = "unzip" ] ; then
+	echo " * installed unzip" 
+else
+	echo "y" | sudo apt-get install unzip
+fi
+
 echo "$WORK_MSG ntpdate time.asia.apple.com"
 ntpdate time.asia.apple.com
 
