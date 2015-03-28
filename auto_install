@@ -32,7 +32,7 @@ brightness_status=`cat /etc/rc.local | grep 'brightness' | wc -L`
 if [ $brightness_status -gt 0 ] ; then
 	echo " * not need set off brightness to start boot"
 else
-	sed '/^test/a\\echo \"ls /sys/class/leds/*/brightness | xargs -i -n1 echo \"echo 0 > {}\" | sh ' -i  /etc/rc.local
+	sed '/^test/a\\echo ls /sys/class/leds/*/brightness | xargs -i -n1 echo \"echo 0 > {}\" | sh ' -i  /etc/rc.local
 fi
 
 
