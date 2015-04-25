@@ -106,9 +106,9 @@ else
 fi
 
 if [ $? -eq 0 ] ; then
-        echo " * mkdir mount dirs ok"
+	echo " * mkdir mount dirs ok"
 else
-        exit 1
+	exit 1
 fi
 
 
@@ -132,7 +132,7 @@ else
 	mount /dev/sda1 /mnt/sda1
 fi
 if [ $ismount_sda2 -gt 0 ] ; then
-		echo " * /dev/sda2 mounted"
+	echo " * /dev/sda2 mounted"
 else		
 	mount /dev/sda2 /mnt/sda2
 fi
@@ -148,8 +148,8 @@ else
 	echo "y" | apt-get install vim
 fi
 echo " * config vim"
-vim_config=`cat /etc/vim/vimrc  | grep 'set nu'| awk '{print $1}' | head -n 1 `
-if [ $vim_config = "set nu" ] ; then
+vim_config=`cat /etc/vim/vimrc  | grep 'set nu' | head -n 1 `
+if [ "$vim_config" = "set nu" ] ; then
 	echo " * not add set nu to vimrc"
 else 
 	echo "\nset nu" >> /etc/vim/vimrc
@@ -218,9 +218,9 @@ if [ "$samba" = "samba" ] ; then
 else
 	echo "y" | apt-get install samba
 	echo " * config samba"
-	echo "\n[shared]\ncomment = shared\npath = /mnt/sda2/f\nbrowseable = yes\nwrite list = @linaro\nguest ok = no " >> /etc/samba/smb.conf
+	echo "\n[shared]\ncomment = shared\npath = /hdd\nbrowseable = yes\nwrite list = @linaro\nguest ok = no " >> /etc/samba/smb.conf
 	echo "ouyangfeng\nouyangfeng\n" | sudo -S smbpasswd -a linaro
-	service samd restart
+	service smbd restart
 fi
 
 
