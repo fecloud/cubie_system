@@ -196,7 +196,7 @@ nfs_kernel_server_config=`cat /etc/exports | grep hdd | head -n 1 | wc -L `
 if [ $nfs_kernel_server_config -gt 0 ] ; then
 	echo " * not add /hdd shared to /etc/exports"	
 else 
-	echo "\n/hdd *(rw,sync,all_squash,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
+	echo "\n/hdd 10.0.0.1/24(rw,sync,all_squash,no_subtree_check,anonuid=1000,anongid=1000)" >> /etc/exports
 	service nfs-kernel-server restart
 fi
 echo " * modify nfs-kernel-server port"
